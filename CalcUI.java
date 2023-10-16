@@ -1,49 +1,47 @@
 import java.lang.*;
 import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 class CalcUI{
 
 
-	private boolean isOver;;
+	private boolean isOver;
 	private PileRPL pile;
+	private Pattern doublePattern;
+	private Pattern realPattern;
 
 	public CalcUI(int size){
 		this.isOver = false;
 		this.pile = new PileRPL(size);
+		this.initPatterns();
 	}
 
 	public CalcUI(){
 		this.isOver = false;
 		this.pile = new PileRPL();
+		this.initPatterns();
 	}
 
 
-	private boolean match(String[] rule, String toCheck){
-		boolean ret = true;
-		int i=0;
-		while (i<arr.length){
-			switch(arr[i]){
-				case "double":
-					ret &= this.isDouble(arr[i]);
-					break;
-				case "int":
-					ret &= this.isInt(arr[i]);
-					break;
-				case "cmd":
-				
-		}
+	private void initPatterns(){
+		this.realPattern = Pattern.compile("[\\+-]?\\p{Digit}(\\.\\p{Digit})?");
+		this.imaginaryPattern = Pattern.compile("[\\+-]?\\p{Digit}(\\.\\p{Digit})?[\\+-]\\p{Digit}(\\.\\p{Digit})?[iI]");
+		this.cmdPattern = Pattern.compile("(push|disp|add|sub)");
 	}
 
-	private boolean isInt(String w){
+	private boolean isReal(String w){
+		return this.realPattern.matcher(w).matches();
 	}
 
-	private boolean isdouble(String w){
+	private boolean isImaginary(String w){
+		return this.imaginaryPattern.matcher(w).matches();
 	}
 
-	private boolean isCommand(String s){
-		String[] cmds = {"push", "disp", "add", "sub"};
-		return cmds.contains(s);
+	private boolean isCommand(String w){
+		return this.cmdPattern.matcher(w).matches();
 	}
+
 		
 
 	private void analyze(String s){
@@ -55,13 +53,37 @@ class CalcUI{
 	public void launch(){
 		Scanner sc;
 		String[] words;
+		Boolean isCmd;
 		String line;
 		while (!this.isOver){
 			sc = new Scanner(System.in);
 			line = sc.nextLine();
-			if (line.equals("exit"))
+			words = line.split(" ");
+			if (words[0].equals("exit"))
 				this.isOver = true;
 
+			isCmd = this.isCommand(line);
+			
+
+			if (this.isCommand(line)){
+				switch (line){
+
+					case "push":
+						System.out.println("This is push!");
+						break;
+					case "disp":
+						System.out.println(this.pile);
+						break;
+					case "add":
+						System.out.println("This is add!");
+						break;
+					case "sub":
+						System.out.println("This is sub!");
+						break;
+					default:
+
+				};
+			}
 
 		}
 	}
