@@ -1,10 +1,10 @@
-class Vector3D implements ObjEmp{
+class Vector3DEmp implements ObjEmp{
 
 	private double X;
 	private double Y;
 	private double Z;
 
-	public Vector3D(double x, double y, double z) {
+	public Vector3DEmp(double x, double y, double z) {
 		this.X = x;
 		this.Y = y;
 		this.Z = z;
@@ -14,22 +14,31 @@ class Vector3D implements ObjEmp{
 	// OPERATIONS
 
 
-	public void add(ObjEmp obj){}
-	public void sub(ObjEmp obj){}
+	public boolean add(ObjEmp obj){
+		if (!(obj instanceof Vector3DEmp))
+			return false;
+		return this.add((Vector3DEmp)obj);
+	}
+	public boolean sub(ObjEmp obj){
+		if (!(obj instanceof Vector3DEmp))
+			return false;
+		return this.sub((Vector3DEmp)obj);
+	}
 	
 
-	public void add(Vector3D obj) {
+	public boolean add(Vector3DEmp obj) {
 		this.X += obj.getX();
 		this.Y += obj.getY();
 		this.Z += obj.getZ();
+		return true;
 	}
 
-//		if (Class.forName("Vector3D").isInstance(obj)){
 
-	public void sub(Vector3D obj) {
+	public boolean sub(Vector3DEmp obj) {
 		this.X -= obj.getX();
 		this.Y -= obj.getY();
 		this.Z -= obj.getZ();
+		return true;
 
 	}
 
@@ -49,9 +58,9 @@ class Vector3D implements ObjEmp{
 	@Override
 	public String toString(){
 		String out = "(";
-		out += this.X;
-		out += this.Y;
-		out += this.Z;
+		out += this.X+",";
+		out += this.Y+",";
+		out += this.Z+")";
 		return out;
 	}
 }

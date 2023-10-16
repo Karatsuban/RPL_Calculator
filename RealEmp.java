@@ -11,18 +11,29 @@ class RealEmp implements ObjEmp{
 	// OPERATIONS
 
 
-	public void add(ObjEmp obj){}
-	public void sub(ObjEmp obj){}
+	public boolean add(ObjEmp obj){
+		if (!(obj instanceof RealEmp))
+			return false; // incompatibles types
+		return this.add((RealEmp)obj);
+	}
+
+	public boolean sub(ObjEmp obj){
+		if (!(obj instanceof RealEmp))
+			return false; // incompatibles types
+		return this.sub((RealEmp)obj);
+	}
 	
 
-	public void add(RealEmp obj) {
+	public boolean add(RealEmp obj) {
 		this.X += obj.getX();
+		return true;
 	}
 
 //		if (Class.forName("RealEmp").isInstance(obj)){
 
-	public void sub(RealEmp obj) {
+	public boolean sub(RealEmp obj) {
 		this.X -= obj.getX();
+		return true;
 	}
 
 	public double getX(){

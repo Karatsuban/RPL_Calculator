@@ -13,21 +13,30 @@ class ComplexEmp implements ObjEmp{
 	// OPERATIONS
 
 
-	public void add(ObjEmp obj){}
-	public void sub(ObjEmp obj){}
+	public boolean add(ObjEmp obj){
+		if (!(obj instanceof ComplexEmp))
+			return false;
+		return this.add((ComplexEmp)obj);
+	}
+	public boolean sub(ObjEmp obj){
+		if (!(obj instanceof ComplexEmp))
+			return false;
+		return this.sub((ComplexEmp)obj);
+	}
 	
 
-	public void add(ComplexEmp obj) {
+	public boolean add(ComplexEmp obj) {
 		this.X += obj.getX();
 		this.Y += obj.getY();
+		return true;
 	}
 
 //		if (Class.forName("ComplexEmp").isInstance(obj)){
 
-	public void sub(ComplexEmp obj) {
+	public boolean sub(ComplexEmp obj) {
 		this.X -= obj.getX();
 		this.Y -= obj.getY();
-
+		return true;
 	}
 
 	public double getX(){
