@@ -34,7 +34,7 @@ class PileRPL {
 		}
 	}
 
-	private ObjEmp pop(){
+	public ObjEmp pop(){
 		ObjEmp temp = null;
 		if (!this.isEmpty()){
 			this.nbObj -= 1;

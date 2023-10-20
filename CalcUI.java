@@ -2,6 +2,8 @@ import java.lang.*;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.io.*;
+import java.net.*;
 
 class CalcUI{
 
@@ -12,22 +14,73 @@ class CalcUI{
 	private Pattern vector3DPattern;
 	private Pattern cmdPattern;
 
-	public CalcUI(int size){
-		this.pile = new PileRPL(size);
+	private boolean logSession;
+	private boolean replaySession;
+
+	private InputStream inStream;
+	private OutputStream outStream;
+
+	private String filename;
+
+	private PrintStream outputUser;
+	private BufferedReader inputUser;
+	private PrintStream outFileStream;
+
+	public CalcUI(int size, InputStream inStream, OutputStream outStream, String filename, boolean log, boolean replay){
+
+		if (size > 0)
+			this.pile = new PileRPL(size);
+		else
+			this.pile = new PileRPL();
+
+		this.inStream = inStream;
+		this.outStream = outStream;
+		this.filename = filename;
+		this.logSession = log;
+		this.replaySession = replay;
+
+		try{
+			this.initStreams();
+		}catch (FileNotFoundException e){
+			System.exit(1);
+		}
 		this.initPatterns();
+		this.launch();
+		this.closeStreams();
 	}
 
-	public CalcUI(){
-		this.pile = new PileRPL();
-		this.initPatterns();
+
+	private void initStreams() throws FileNotFoundException{
+
+		if (this.replaySession){
+			this.inputUser = new BufferedReader(new InputStreamReader(new FileInputStream(new File(this.filename)))); // input is a file
+		}else{
+			this.inputUser = new BufferedReader(new InputStreamReader(this.inStream)); // input is from the user
+		}
+	
+		this.outputUser = new PrintStream(this.outStream); // output is always to the user
+
+		if (this.logSession)
+			this.outFileStream = new PrintStream(new FileOutputStream(new File(this.filename))); // log is always is file
 	}
 
+
+	private void closeStreams(){
+		// close the streams here
+		try {
+		this.inputUser.close();
+		}catch (IOException e){
+			this.outputUser.println("Error when closin input!");
+		}
+	
+		this.outputUser.close();
+	}
 
 	private void initPatterns(){
 		this.realPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?");
 		this.complexPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?[\\+-](\\p{Digit}+(\\.\\p{Digit}+)?)?[iI]");
 		this.vector3DPattern = Pattern.compile("([\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?,){2}[\\+-]?(\\p{Digit})+(\\.\\p{Digit}+)?");
-		this.cmdPattern = Pattern.compile("(push|disp|add|sub|exit)");
+		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|exit|quit)");
 	}
 
 	private boolean isReal(String w){
@@ -92,20 +145,36 @@ class CalcUI{
 
 	public void launch(){
 		boolean isOver = false;
-		Scanner sc;
 		String[] words;
 		Boolean isCmd;
 		
-		String line;
-		while (!isOver){
-			sc = new Scanner(System.in);
-			line = sc.nextLine();
+		String line = "";
+
+		try{
+			line = this.inputUser.readLine();
+		}catch (IOException e){
+		}
+
+		if (line == null)
+			isOver = true;
+
+		while (!isOver) {
+
+			if (this.logSession){ // in log mode
+				this.outFileStream.println(line); // print the commands to the log file
+			}
+
+			if (this.replaySession){ // in replay mode
+				this.outputUser.println(line); // print the commands to the user
+			}
+
 			words = line.split(" ");
 
 			if (this.isCommand(words[0])){
 				switch (words[0]){
 
 					case "exit":
+					case "quit":
 						isOver = true;
 						break;
 			
@@ -122,9 +191,13 @@ class CalcUI{
 						}
 
 						break;
+
+					case "pop":
+						this.pile.pop();
+						break;
 		
 					case "disp":
-						System.out.println(this.pile);
+						this.outputUser.println(this.pile);
 						break;
 			
 					case "add":
@@ -137,21 +210,20 @@ class CalcUI{
 				};
 
 			}else{
-				System.out.println("Unknonw command: '"+words[0]+"'");
+				this.outputUser.println("Unknonw command: '"+words[0]+"'");
 			}
 
-		}
+			
+			try{
+				line = this.inputUser.readLine();
+			}catch (IOException e){
+				isOver = true;
+			}
+
+			if (line == null)
+				isOver = true;
+
+		}while (!isOver);
 	}
 
-	public static void main(String[] args){
-
-		CalcUI UI = null;
-
-		if (args.length > 0)
-			UI = new CalcUI(Integer.valueOf(args[0]));
-		else
-			UI = new CalcUI();
-
-		UI.launch();
-	}
 }
