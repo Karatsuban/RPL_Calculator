@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.io.*;
 import java.net.*;
 
-class CalcUI{
+class CalcUI extends Thread{
 
 
 	private PileRPL pile;
@@ -16,6 +16,7 @@ class CalcUI{
 
 	private boolean logSession;
 	private boolean replaySession;
+	private boolean localSession;
 
 	private InputStream inStream;
 	private OutputStream outStream;
@@ -26,7 +27,9 @@ class CalcUI{
 	private BufferedReader inputUser;
 	private PrintStream outFileStream;
 
-	public CalcUI(int size, InputStream inStream, OutputStream outStream, String filename, boolean log, boolean replay){
+	private Socket socket;
+
+	public CalcUI(int size, InputStream inStream, OutputStream outStream, String filename, boolean log, boolean replay, boolean local, Socket socket){
 
 		if (size > 0)
 			this.pile = new PileRPL(size);
@@ -37,28 +40,47 @@ class CalcUI{
 		this.outStream = outStream;
 		this.filename = filename;
 		this.logSession = log;
+		this.localSession = local;
 		this.replaySession = replay;
+		this.socket = socket;
+
+
+		System.out.println(socket);
 
 		try{
 			this.initStreams();
 		}catch (FileNotFoundException e){
-			System.exit(1);
 		}
+
 		this.initPatterns();
-		this.launch();
-		this.closeStreams();
+		this.start();
+
+		System.out.println("Start exited!");
+		//this.closeStreams();
 	}
 
 
 	private void initStreams() throws FileNotFoundException{
 
-		if (this.replaySession){
+		if (this.replaySession){ // replay session
 			this.inputUser = new BufferedReader(new InputStreamReader(new FileInputStream(new File(this.filename)))); // input is a file
-		}else{
+		}else if (this.localSession){ // local session
 			this.inputUser = new BufferedReader(new InputStreamReader(this.inStream)); // input is from the user
+		}else{ // remote session
+			try{
+				this.inputUser = new BufferedReader(new InputStreamReader(this.socket.getInputStream())); // input from the socket
+			}catch(IOException e){
+			}
 		}
-	
-		this.outputUser = new PrintStream(this.outStream); // output is always to the user
+
+		if (this.localSession){ // local
+			this.outputUser = new PrintStream(this.outStream); // output is always to the user
+		}else{ // remote
+			try{
+				this.outputUser = new PrintStream(this.socket.getOutputStream()); // output to the socket
+			}catch (IOException e){
+			}
+		}
 
 		if (this.logSession)
 			this.outFileStream = new PrintStream(new FileOutputStream(new File(this.filename))); // log is always is file
@@ -143,7 +165,7 @@ class CalcUI{
 	
 
 
-	public void launch(){
+	public void run(){
 		boolean isOver = false;
 		String[] words;
 		Boolean isCmd;
@@ -155,8 +177,10 @@ class CalcUI{
 		}catch (IOException e){
 		}
 
-		if (line == null)
+		if (line == null){
+			System.out.println("line is null");
 			isOver = true;
+		}
 
 		while (!isOver) {
 
@@ -223,7 +247,8 @@ class CalcUI{
 			if (line == null)
 				isOver = true;
 
-		}while (!isOver);
+		}while (true);
+		//}while (!isOver);
 	}
 
 }

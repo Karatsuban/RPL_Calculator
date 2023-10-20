@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.*;
 
 public class CalcServer{
 
@@ -11,8 +12,12 @@ public class CalcServer{
     private boolean sharedSession;
 
     private String logFilename;
+	//private CalcUI calc;
 
-	private CalcUI calc;
+	private int port = 12345;
+	ServerSocket servSocket;
+	Socket socket;
+
 
 	public CalcServer(String[] args){
 
@@ -99,19 +104,37 @@ public class CalcServer{
 			userOut = System.out;
 		}
 
-		if (this.replaySession){
-			try{
-				userIn = new FileInputStream(new File(this.logFilename));
-			}catch (FileNotFoundException e){
-				System.out.println(e.getMessage());
+		ServerSocket waiter;
+		Socket socket;
+
+		if (this.localSession){
+			new CalcUI(size, userIn, userOut, this.logFilename, this.logSession, this.replaySession, this.localSession, null);
+		}else{
+
+			try {
+				waiter = new ServerSocket(this.port);
+				while (true){
+					socket = waiter.accept();
+					//userIn = socket.getInputStream();
+					//userOut = socket.getOutputStream();
+					new CalcUI(size, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
+	
+				}
+			}catch (IOException e){
+				System.out.println("Error when connecting!");
 			}
-			userOut = System.out;
 		}
 
 
-		this.calc = new CalcUI(size, userIn, userOut, this.logFilename, this.logSession, this.replaySession);
-
 	}
+
+	private void launchRemote(){
+	}
+
+
+	private void launchLocal(){
+	}
+
 
 
 	public String toString(){
@@ -131,6 +154,9 @@ public class CalcServer{
 
         // usage :
         // $ java CalcUI size <size> (user [log|replay|local|remote]) (users remote [shared|solo])
+
+
+		// TODO AJOUTER L'AIDE (-h ou help)
 
         CalcServer server = new CalcServer(args);
     }
