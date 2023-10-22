@@ -1,6 +1,7 @@
 TODO
 
--add a way to check if the value after operation is null. If it is, remove it from the pile
--add a way to adapt the width of the pile in its toString method (by checking the size of the object's representation when putting them in
-
-
+- add a way to check if the value after operation is null. If it is, remove it from the pile
+- add a way to adapt the width of the pile in its toString method (by checking the size of the object's representation when putting them in
+- returns the error as String in PileRPL so that the output can printed to the user
+- Detach CalcUI from the thread to allow a unique PileRPL to be shared by many users
+- Add other operations (mult, div)

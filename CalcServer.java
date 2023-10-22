@@ -10,9 +10,12 @@ public class CalcServer{
     private boolean localSession;
     private boolean singleUser;
     private boolean sharedSession;
+	private int size;
 
     private String logFilename;
-	//private CalcUI calc;
+
+	private InputStream userIn;
+	private OutputStream userOut;
 
 	private int port = 12345;
 	ServerSocket servSocket;
@@ -26,65 +29,76 @@ public class CalcServer{
 
         Parser argsParser = new Parser(args);
 
-        this.logSession = false;
-        this.replaySession = false;
-        this.localSession = true;
-        this.singleUser = true;
-        this.sharedSession = false;
+		// default parameters
+        this.logSession = false; // no log
+        this.replaySession = false; // no replay
+        this.localSession = true; // local
+        this.singleUser = true; // single user
+        this.sharedSession = false;  // no shared session
 
-		int size = -1;
+		this.size = -1;
+		String defaultLogFilename = "default_logfile.log";
 
         if (argsParser.getToken().equals("size")){
-            size = Integer.valueOf(argsParser.getAhead(1));
-            argsParser.advance(2);
+            this.size = Integer.valueOf(argsParser.getAhead(1));
+			argsParser.advance(2);
         }
 
 		System.out.println("size: "+size+"\n");
 
+		String tempArg = "";
 
         switch (argsParser.consume()){
             case "user":
-				System.out.println("In user");
-				switch (argsParser.consume()){
-                    case "log":
-                        this.logSession = true;
-                        this.logFilename = argsParser.consume(); // get the file name
-                        break;
-                    case "replay":
-                        this.replaySession = true;
-                        this.logFilename = argsParser.consume(); // get the file name
-                        break;
-                    case "local":
-                        this.localSession = true;
-                        break;
-                    case "remote":
-                        this.localSession = false;
-                        break;
-                    case "NO_TOKEN":
-                        this.localSession = true;
-                        this.logSession = false;
-                        this.logFilename = null;
-						break;
-                }
-                break;
+				while (!argsParser.getToken().equals("NO_TOKEN")){
+					switch (tempArg = argsParser.consume()){
+	                    case "log":
+	                        this.logSession = true;
+							if (argsParser.hasTokens())
+		                        this.logFilename = argsParser.consume(); // get the file name
+							else
+								this.logFilename = defaultLogFilename;
+	                        break;
+	                    case "replay":
+	                        this.replaySession = true;
+							if (argsParser.hasTokens())
+		                        this.logFilename = argsParser.consume(); // get the file name
+							else
+								this.logFilename = defaultLogFilename;
+	                        break;
+	                    case "local":
+	                        this.localSession = true;
+	                        break;
+	                    case "remote":
+	                        this.localSession = false;
+	                        break;
+						default:
+							System.out.println("Unknown argument: "+tempArg);
+                	}
+				}
+			break;
 
             case "users":
-				System.out.println("in USERS");
-				this.singleUser = false;
-				this.localSession = false;
-				System.out.println("HERE");
-                switch (argsParser.consume()){
-                    case "remote":
-                        break;
-                    case "shared":
-                        this.sharedSession = true;
-						break;
-
+				this.singleUser = false; // multiple users
+				this.localSession = false; // remote for multiple users
+				while (!argsParser.getToken().equals("NO_TOKEN")){
+	                switch (tempArg = argsParser.consume()){
+	                    case "remote": // do nothing
+	                        break;
+	                    case "shared":
+	                        this.sharedSession = true;
+							break;
+						case "not-shared":
+							this.sharedSession = false;
+							break;
+						default:
+							System.out.println("Unknown argument: "+tempArg);
+					}
                 }
                 break;
 
 			case "NO_TOKEN":
-				System.out.println("Malformed arguments!");
+				System.out.println("No argument given. Default mode : local single-user");
 				break;
 
 			default:
@@ -93,57 +107,77 @@ public class CalcServer{
 
 		System.out.println(this);
 
-
-		// values by default
-		InputStream userIn = System.in;
-		OutputStream userOut = System.out;
-		OutputStream logOut = null;
-
-		if (this.localSession){
-			userIn = System.in;
-			userOut = System.out;
+		if (this.setStreams()){
+			this.launch();
+		}else{
+			System.out.println("Aborting launch");
 		}
 
+	}
+
+	private boolean setStreams(){
+		boolean out = true;
+
+		if (this.localSession){
+			this.userIn = System.in;
+			this.userOut = System.out;
+		}
+		
+		if (this.replaySession){
+			File f = new File(this.logFilename);
+			if (!f.isFile() || !f.exists()){
+				System.out.println("Replay file "+this.logFilename+" does not exists!");
+				out = false;
+			}
+		}
+		return out;
+
+	}
+
+
+	private void launch(){
+		// launch a either a local or a remote session
+		if (this.localSession){
+			this.launchLocal();
+		}else{
+			this.launchRemote();
+		}
+	}
+
+	private void launchLocal(){
+		new CalcUI(size, userIn, userOut, this.logFilename, this.logSession, this.replaySession, this.localSession, null);
+	}
+
+
+	private void launchRemote(){
 		ServerSocket waiter;
 		Socket socket;
 
-		if (this.localSession){
-			new CalcUI(size, userIn, userOut, this.logFilename, this.logSession, this.replaySession, this.localSession, null);
-		}else{
+		boolean waitNewConnection = true;
 
-			try {
-				waiter = new ServerSocket(this.port);
-				while (true){
-					socket = waiter.accept();
-					//userIn = socket.getInputStream();
-					//userOut = socket.getOutputStream();
-					new CalcUI(size, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
-	
-				}
-			}catch (IOException e){
-				System.out.println("Error when connecting!");
+		try {
+			waiter = new ServerSocket(this.port);
+			while (waitNewConnection){
+				socket = waiter.accept();
+				if (this.singleUser)
+					waitNewConnection = false; // allow only one connection
+				new CalcUI(size, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
+
 			}
+		}catch (IOException e){
+			System.out.println("Error when connecting!");
 		}
-
-
-	}
-
-	private void launchRemote(){
-	}
-
-
-	private void launchLocal(){
 	}
 
 
 
 	public String toString(){
 		String out = "Vars:\n";
-		out += "log :"+this.logSession+"\n";
-        out += "replay: "+this.replaySession+"\n";
-        out += "local: "+this.localSession+"\n";
-        out += "singleUser: "+this.singleUser+"\n";
-        out += "shared: "+this.sharedSession+"\n";
+		out += "log :\t\t"+this.logSession+"\n";
+        out += "replay: \t"+this.replaySession+"\n";
+        out += "local: \t\t"+this.localSession+"\n";
+        out += "singleUser: \t"+this.singleUser+"\n";
+        out += "shared: \t"+this.sharedSession+"\n";
 		out += "\n";
 		return out;
 	}

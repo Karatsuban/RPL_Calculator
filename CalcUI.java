@@ -55,8 +55,6 @@ class CalcUI extends Thread{
 		this.initPatterns();
 		this.start();
 
-		System.out.println("Start exited!");
-		//this.closeStreams();
 	}
 
 
@@ -102,7 +100,7 @@ class CalcUI extends Thread{
 		this.realPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?");
 		this.complexPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?[\\+-](\\p{Digit}+(\\.\\p{Digit}+)?)?[iI]");
 		this.vector3DPattern = Pattern.compile("([\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?,){2}[\\+-]?(\\p{Digit})+(\\.\\p{Digit}+)?");
-		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|exit|quit)");
+		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|exit|quit|help)");
 	}
 
 	private boolean isReal(String w){
@@ -164,6 +162,17 @@ class CalcUI extends Thread{
 	}
 	
 
+	private void displayHelp(){
+		this.outputUser.println("The available commands are:");
+		this.outputUser.println("help : display this help");
+		this.outputUser.println("push <value> : push a value to the RPL");
+		this.outputUser.println("pop : remove the last value in the RPL");
+		this.outputUser.println("add : add the last values in the RPL if the operation is possible");
+		this.outputUser.println("sub : substract the second to last from the last element in the RPL if possible");
+		this.outputUser.println("disp : display the RPL");
+		this.outputUser.println("exit/quit : exit from this application");
+	}
+
 
 	public void run(){
 		boolean isOver = false;
@@ -172,17 +181,25 @@ class CalcUI extends Thread{
 		
 		String line = "";
 
-		try{
-			line = this.inputUser.readLine();
-		}catch (IOException e){
-		}
 
+		/*
 		if (line == null){
 			System.out.println("line is null");
 			isOver = true;
-		}
+		}*/
+
+		this.outputUser.println("Welcome to the interactive RPL Calculator!");
+		this.outputUser.println("Type 'help' to get help on the available commands.");
 
 		while (!isOver) {
+
+			this.outputUser.print("Calc> ");
+
+			try{
+				line = this.inputUser.readLine();
+			}catch (IOException e){
+			}
+		
 
 			if (this.logSession){ // in log mode
 				this.outFileStream.println(line); // print the commands to the log file
@@ -192,7 +209,11 @@ class CalcUI extends Thread{
 				this.outputUser.println(line); // print the commands to the user
 			}
 
+			if (line == null)
+				line = "exit";
+
 			words = line.split(" ");
+
 
 			if (this.isCommand(words[0])){
 				switch (words[0]){
@@ -231,24 +252,21 @@ class CalcUI extends Thread{
 					case "sub":
 						this.pile.sub();
 						break;
+
+					case "help":
+						this.displayHelp();
+						break;
 				};
 
 			}else{
-				this.outputUser.println("Unknonw command: '"+words[0]+"'");
+				this.outputUser.println("Unknown command: '"+words[0]+"'");
 			}
 
-			
-			try{
-				line = this.inputUser.readLine();
-			}catch (IOException e){
-				isOver = true;
-			}
 
-			if (line == null)
-				isOver = true;
+		}while (!isOver);
 
-		}while (true);
-		//}while (!isOver);
+		this.closeStreams(); // close all streams
+	
 	}
 
 }
