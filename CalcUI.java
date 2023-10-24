@@ -8,7 +8,6 @@ import java.net.*;
 class CalcUI extends Thread{
 
 
-	private PileRPL pile;
 	private Pattern realPattern;
 	private Pattern complexPattern;
 	private Pattern vector3DPattern;
@@ -29,12 +28,12 @@ class CalcUI extends Thread{
 
 	private Socket socket;
 
-	public CalcUI(int size, InputStream inStream, OutputStream outStream, String filename, boolean log, boolean replay, boolean local, Socket socket){
+	private PileRPL pile;
 
-		if (size > 0)
-			this.pile = new PileRPL(size);
-		else
-			this.pile = new PileRPL();
+	
+	public CalcUI(PileRPL pile, InputStream inStream, OutputStream outStream, String filename, boolean log, boolean replay, boolean local, Socket socket){
+
+		this.pile = pile;
 
 		this.inStream = inStream;
 		this.outStream = outStream;

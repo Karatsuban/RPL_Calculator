@@ -10,7 +10,7 @@ public class CalcServer{
     private boolean localSession;
     private boolean singleUser;
     private boolean sharedSession;
-	private int size;
+	private int pileSize;
 
     private String logFilename;
 
@@ -36,15 +36,15 @@ public class CalcServer{
         this.singleUser = true; // single user
         this.sharedSession = false;  // no shared session
 
-		this.size = -1;
+		this.pileSize = -1;
 		String defaultLogFilename = "default_logfile.log";
 
         if (argsParser.getToken().equals("size")){
-            this.size = Integer.valueOf(argsParser.getAhead(1));
+            this.pileSize = Integer.valueOf(argsParser.getAhead(1));
 			argsParser.advance(2);
         }
 
-		System.out.println("size: "+size+"\n");
+		System.out.println("size: "+this.pileSize+"\n");
 
 		String tempArg = "";
 
@@ -136,36 +136,70 @@ public class CalcServer{
 
 
 	private void launch(){
-		// launch a either a local or a remote session
-		if (this.localSession){
-			this.launchLocal();
+		// launch either a single user or a multi-user session
+		if (this.singleUser){
+			this.launchSingle();
 		}else{
-			this.launchRemote();
+			this.launchMultiple();
 		}
 	}
 
-	private void launchLocal(){
-		new CalcUI(size, userIn, userOut, this.logFilename, this.logSession, this.replaySession, this.localSession, null);
+	private void launchSingle(){
+		PileRPL pile = new PileRPL(this.pileSize);
+
+		if (this.localSession)
+		{
+			new CalcUI(pile, userIn, userOut, this.logFilename, this.logSession, this.replaySession, this.localSession, null);
+		}
+		else
+		{
+			ServerSocket waiter;
+			Socket socket;
+
+			try {
+				waiter = new ServerSocket(this.port);
+				socket = waiter.accept();
+				new CalcUI(pile, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
+				
+			}catch (IOException e){
+			}
+		}
 	}
 
 
-	private void launchRemote(){
+	private void launchMultiple(){
 		ServerSocket waiter;
 		Socket socket;
 
-		boolean waitNewConnection = true;
-
-		try {
-			waiter = new ServerSocket(this.port);
-			while (waitNewConnection){
-				socket = waiter.accept();
-				if (this.singleUser)
-					waitNewConnection = false; // allow only one connection
-				new CalcUI(size, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
-
+		if (this.sharedSession)
+		{
+			PileRPL sharedPile = new PileRPL(this.pileSize);
+			try {
+				waiter = new ServerSocket(this.port);
+				while (true)
+				{
+					socket = waiter.accept();
+					new CalcUI(sharedPile, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
+				}
+			}catch (IOException e){
+				System.out.println("Error when connecting!");
 			}
-		}catch (IOException e){
-			System.out.println("Error when connecting!");
+
+		}
+		else
+		{
+
+			try {
+				waiter = new ServerSocket(this.port);
+				while (true)
+				{
+					socket = waiter.accept();
+					PileRPL newPile = new PileRPL(this.pileSize);
+					new CalcUI(newPile, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
+				}
+			}catch (IOException e){
+				System.out.println("Error when connecting!");
+			}
 		}
 	}
 

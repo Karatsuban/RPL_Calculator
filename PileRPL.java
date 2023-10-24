@@ -6,9 +6,14 @@ class PileRPL {
 	private int nbObj;
 	public ObjEmp[] pile;
 
+	private int reprWidth;
+
 	public PileRPL(int size){
+		if (size <= 0)
+			size = this.NBOBJMAX; // default size
 		this.pile = new ObjEmp[size];
 		this.nbObj = 0;
+		this.reprWidth = 0;
 	}
 
 	public PileRPL(){
@@ -29,6 +34,10 @@ class PileRPL {
 			//System.out.println("Pushing "+obj);
 			this.pile[this.nbObj] = obj; // add object
 			this.nbObj += 1; // increment nb of obj
+			if (obj.toString().length()+2 > this.reprWidth)
+			{
+				this.reprWidth = obj.toString().length()+2; // adapt the pile visual representation's width
+			}
 		}else{
 			System.out.println("The stack is full!");
 		}
@@ -60,9 +69,9 @@ class PileRPL {
 			{
 				this.push(o2); // operation successful
 				o1 = null;
-			}else{
+			}else{ // operation failed
 				System.out.println("Operation failed: operands of different types!");
-				this.push(o2); // operation failed
+				this.push(o2); // pushing back both operands
 				this.push(o1);
 			}
 		}
@@ -89,17 +98,19 @@ class PileRPL {
 	}
 
 	public String toString(){
-		int maxWidth=15;
 		String out = "";
-		for (int i=this.pile.length-1; i>=0; i--){
-			out += i+"|";
-			if (Objects.isNull(this.pile[i]))
-				out+= " ".repeat(maxWidth);
-			else
-				out+= this.pile[i]+" ".repeat(maxWidth-this.pile[i].toString().length());
-			out += "|\n";
+		if (this.isEmpty())
+		{
+			out += "The pile is empty!\n";
+		}else{
+			for (int i=this.nbObj-1; i>=0; i--){
+				out += i+"| ";
+				out+= this.pile[i]+" ".repeat(this.reprWidth-this.pile[i].toString().length()-1);
+				out += "|\n";
+			}
+			out += " +"+"-".repeat(this.reprWidth)+"+\n";
 		}
-		out += " +"+"-".repeat(maxWidth)+"+";
+		out += "(capacity: "+this.pile.length+")";
 		return out;
 	}
 
