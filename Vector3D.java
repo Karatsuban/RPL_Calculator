@@ -1,4 +1,4 @@
-class Vector3DEmp implements ObjEmp{
+class Vector3DEmp extends ObjEmp{
 
 	private double X;
 	private double Y;
@@ -14,31 +14,38 @@ class Vector3DEmp implements ObjEmp{
 	// OPERATIONS
 
 
-	public boolean add(ObjEmp obj){
+	public Error add(ObjEmp obj){
+		Error out = Error.NO_ERROR;
 		if (!(obj instanceof Vector3DEmp))
-			return false;
-		return this.add((Vector3DEmp)obj);
+			out = Error.INCOMPATIBLE;
+		else
+			out = this.add((Vector3DEmp)obj);
+		return out;
 	}
-	public boolean sub(ObjEmp obj){
+
+	public Error sub(ObjEmp obj){
+		Error out = Error.NO_ERROR;
 		if (!(obj instanceof Vector3DEmp))
-			return false;
-		return this.sub((Vector3DEmp)obj);
+			out = Error.INCOMPATIBLE;
+		else
+			out = this.sub((Vector3DEmp)obj);
+		return out;
 	}
 	
 
-	public boolean add(Vector3DEmp obj) {
+	public Error add(Vector3DEmp obj) {
 		this.X += obj.getX();
 		this.Y += obj.getY();
 		this.Z += obj.getZ();
-		return true;
+		return Error.NO_ERROR;
 	}
 
 
-	public boolean sub(Vector3DEmp obj) {
+	public Error sub(Vector3DEmp obj) {
 		this.X -= obj.getX();
 		this.Y -= obj.getY();
 		this.Z -= obj.getZ();
-		return true;
+		return Error.NO_ERROR;
 
 	}
 

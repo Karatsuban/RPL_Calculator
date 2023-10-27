@@ -120,10 +120,10 @@ class CalcUI extends Thread{
 
 	private void addReal(String w){
 		ObjEmp r = new RealEmp(Double.parseDouble(w));
-		this.pile.push(r);
+		this.pile.push(r, this.outputUser);
 	}
 
-	
+
 	private void addComplex(String w){
 		int indexSepSign = Math.max(w.indexOf("+", 1), w.indexOf("-", 1));
 		double im = 1;
@@ -148,7 +148,7 @@ class CalcUI extends Thread{
 			im *= Double.parseDouble(ims); // so im = 1
 		
 		ObjEmp c = new ComplexEmp(re, im);
-		this.pile.push(c);
+		this.pile.push(c, this.outputUser);
 	}
 
 	private void addVector3D(String w){
@@ -157,7 +157,7 @@ class CalcUI extends Thread{
 		for (int i=0; i<3; i++)
 			values[i] = Double.parseDouble(words[i]);
 		ObjEmp v3d = new Vector3DEmp(values[0], values[1], values[2]);
-		this.pile.push(v3d);
+		this.pile.push(v3d, this.outputUser);
 	}
 	
 
@@ -237,7 +237,7 @@ class CalcUI extends Thread{
 						break;
 
 					case "pop":
-						this.pile.pop();
+						this.pile.pop(this.outputUser);
 						break;
 		
 					case "disp":
@@ -245,11 +245,11 @@ class CalcUI extends Thread{
 						break;
 			
 					case "add":
-						this.pile.add();
+						this.pile.add(this.outputUser);
 						break;
 			
 					case "sub":
-						this.pile.sub();
+						this.pile.sub(this.outputUser);
 						break;
 
 					case "help":

@@ -1,4 +1,5 @@
 import java.util.Objects;
+import java.io.*;
 
 class PileRPL {
 
@@ -17,7 +18,7 @@ class PileRPL {
 	}
 
 	public PileRPL(){
-		this(NBOBJMAX);
+		this( NBOBJMAX);
 	}
 
 	private boolean isEmpty(){
@@ -29,9 +30,8 @@ class PileRPL {
 	}
 
 
-	public void push(ObjEmp obj){
+	public void push(ObjEmp obj, PrintStream outStream){
 		if (!this.isFull()){ // don't overflow
-			//System.out.println("Pushing "+obj);
 			this.pile[this.nbObj] = obj; // add object
 			this.nbObj += 1; // increment nb of obj
 			if (obj.toString().length()+2 > this.reprWidth)
@@ -39,18 +39,18 @@ class PileRPL {
 				this.reprWidth = obj.toString().length()+2; // adapt the pile visual representation's width
 			}
 		}else{
-			System.out.println("The stack is full!");
+			outStream.println("The stack is full!");
 		}
 	}
 
-	public ObjEmp pop(){
+	public ObjEmp pop(PrintStream outStream){
 		ObjEmp temp = null;
 		if (!this.isEmpty()){
 			this.nbObj -= 1;
 			temp = this.pile[this.nbObj];
 			this.pile[this.nbObj] = null;
 		}else{
-			System.out.println("The stack is empty!");
+			outStream.println("The stack is empty!");
 		}
 		return temp;
 	}
@@ -58,41 +58,77 @@ class PileRPL {
 	// OPERATIONS ON OBJ
 
 
-	public void add(){
+	public void add(PrintStream out){
 		if (this.nbObj < 2){
-			System.out.println("Can't add : not enough objects!");
+			out.println("Can't add : not enough objects!");
 		}else{
-			//System.out.println("Addition");
-			ObjEmp o1 = this.pop();
-			ObjEmp o2 = this.pop();
-			if (o2.add(o1))
+			ObjEmp o1 = this.pop(out);
+			ObjEmp o2 = this.pop(out);
+			Error err = o2.add(o1);
+			if (!err.isError())
 			{
-				this.push(o2); // operation successful
+				this.push(o2, out); // operation successful
 				o1 = null;
 			}else{ // operation failed
-				System.out.println("Operation failed: operands of different types!");
-				this.push(o2); // pushing back both operands
-				this.push(o1);
+				out.println("Operation failed: operands of different types!");
+				this.push(o2, out); // pushing back both operands
+				this.push(o1, out);
 			}
 		}
 	}
 
 
-	public void sub(){
+	public void sub(PrintStream out){
 		if (this.nbObj < 2){
-			System.out.println("Can't substract : not enough objects!");
+			out.println("Can't substract: not enough objects!");
 		}else{
-			//System.out.println("Subsraction");
-			ObjEmp o1 = this.pop();
-			ObjEmp o2 = this.pop();
-			if (o2.sub(o1))
+			ObjEmp o1 = this.pop(out);
+			ObjEmp o2 = this.pop(out);
+			Error err = o2.sub(o1);
+			if (!err.isError())
 			{
-				this.push(o2); // operation successful
+				this.push(o2, out); // successful operation
 				o1 = null;
 			}else{
-				System.out.println("Operation failed: operands of different types!");
-				this.push(o2); // operation failed
-				this.push(o1);
+				out.println("Operation failed: "+err.get());
+				this.push(o2, out); // operation failed
+				this.push(o1, out);
+			}
+		}
+	}
+
+	public void mult(PrintStream out){
+		if (this.nbObj < 2){
+			out.println("Can't multiply : not enough objects!");
+		}else{
+			ObjEmp o1 = this.pop(out);
+			ObjEmp o2 = this.pop(out);
+			Error err = o2.mult(o1);
+			if (!err.isError()){
+				this.push(o2, out); // successful operation
+				o1 = null;
+			}else{
+				out.println("Operation failed: "+err.get());
+				this.push(o2, out); // operation failed
+				this.push(o1, out);
+			}
+		}
+	}
+
+	public void div(PrintStream out){
+		if (this.nbObj < 2){
+			out.println("Can't divide : not enough objects!");
+		}else{
+			ObjEmp o1 = this.pop(out);
+			ObjEmp o2 = this.pop(out);
+			Error err = o2.div(o1); // operation
+			if (!err.isError()){
+				this.push(o2, out); // successful operation
+				o1 = null;
+			}else{
+				out.println("Operation failed: "+err.get());
+				this.push(o2, out); // operation failed
+				this.push(o1, out);
 			}
 		}
 	}
@@ -105,7 +141,8 @@ class PileRPL {
 		}else{
 			for (int i=this.nbObj-1; i>=0; i--){
 				out += i+"| ";
-				out+= this.pile[i]+" ".repeat(this.reprWidth-this.pile[i].toString().length()-1);
+				out += this.pile[i];
+				out += " ".repeat(this.reprWidth-this.pile[i].toString().length()-1);
 				out += "|\n";
 			}
 			out += " +"+"-".repeat(this.reprWidth)+"+\n";

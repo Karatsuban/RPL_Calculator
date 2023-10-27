@@ -1,6 +1,21 @@
-interface ObjEmp {
+public class ObjEmp {
+
+
 	// OPERATIONS
-	public boolean add(ObjEmp obj); 
-	public boolean sub(ObjEmp obj);
+	public Error add(ObjEmp obj){
+		return Error.NOT_PERMITTED;
+	}
+
+	public Error sub(ObjEmp obj){
+		return Error.NOT_PERMITTED;
+	}
+
+	public Error div(ObjEmp obj){
+		return Error.NOT_PERMITTED;
+	}
+
+	public Error mult(ObjEmp obj){
+		return Error.NOT_PERMITTED;
+	}
 
 }

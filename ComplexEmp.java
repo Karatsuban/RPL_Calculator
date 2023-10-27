@@ -1,4 +1,4 @@
-class ComplexEmp implements ObjEmp{
+class ComplexEmp extends ObjEmp{
 
 	private double X;
 	private double Y;
@@ -12,31 +12,71 @@ class ComplexEmp implements ObjEmp{
 
 	// OPERATIONS
 
-
-	public boolean add(ObjEmp obj){
+	// ADD
+	public Error add(ObjEmp obj){
+		Error out = Error.NO_ERROR;
 		if (!(obj instanceof ComplexEmp))
-			return false;
-		return this.add((ComplexEmp)obj);
+			out = Error.INCOMPATIBLE;
+		else
+			out = this.add((ComplexEmp)obj);
+		return out;
 	}
-	public boolean sub(ObjEmp obj){
-		if (!(obj instanceof ComplexEmp))
-			return false;
-		return this.sub((ComplexEmp)obj);
-	}
-	
 
-	public boolean add(ComplexEmp obj) {
+	public Error add(ComplexEmp obj) {
 		this.X += obj.getX();
 		this.Y += obj.getY();
-		return true;
+		return Error.NO_ERROR;
 	}
 
-//		if (Class.forName("ComplexEmp").isInstance(obj)){
 
-	public boolean sub(ComplexEmp obj) {
+	// SUB
+	public Error sub(ObjEmp obj){
+		Error out = Error.NO_ERROR;
+		if (!(obj instanceof ComplexEmp))
+			out = Error.INCOMPATIBLE;
+		else
+			out = this.sub((ComplexEmp)obj);
+		return out;
+	}
+	
+	public Error sub(ComplexEmp obj) {
 		this.X -= obj.getX();
 		this.Y -= obj.getY();
-		return true;
+		return Error.NO_ERROR;
+	}
+
+
+	// MULT
+	public Error mult(ObjEmp obj){ // TODO
+		Error out = Error.NO_ERROR;
+		if (!(obj instanceof ComplexEmp))
+			out = Error.INCOMPATIBLE;
+		else
+			out = this.sub((ComplexEmp)obj);
+		return out;
+	}
+	
+	public Error mult(ComplexEmp obj) { // TODO
+		this.X -= obj.getX();
+		this.Y -= obj.getY();
+		return Error.NO_ERROR;
+	}
+
+
+	// DIV
+	public Error div(ObjEmp obj){ // TODO
+		Error out = Error.NO_ERROR;
+		if (!(obj instanceof ComplexEmp))
+			out = Error.INCOMPATIBLE;
+		else
+			out = this.div((ComplexEmp)obj);
+		return out;
+	}
+	
+	public Error div(ComplexEmp obj) { // TODO
+		this.X -= obj.getX();
+		this.Y -= obj.getY();
+		return Error.NO_ERROR;
 	}
 
 	public double getX(){

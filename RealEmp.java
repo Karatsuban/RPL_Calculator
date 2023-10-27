@@ -1,4 +1,4 @@
-class RealEmp implements ObjEmp{
+class RealEmp extends ObjEmp{
 
 	private double X;
 
@@ -11,30 +11,74 @@ class RealEmp implements ObjEmp{
 	// OPERATIONS
 
 
-	public boolean add(ObjEmp obj){
+	// ADD
+	public Error add(ObjEmp obj){
+		Error out = Error.NO_ERROR;
 		if (!(obj instanceof RealEmp))
-			return false; // incompatibles types
-		return this.add((RealEmp)obj);
+			out = Error.INCOMPATIBLE; // incompatibles types
+		else
+			out = this.add((RealEmp)obj);
+		return out;
 	}
 
-	public boolean sub(ObjEmp obj){
+	public Error add(RealEmp obj) {
+		this.X += obj.getX();
+		return Error.NO_ERROR; // OK
+	}
+
+
+	// SUB
+	public Error sub(ObjEmp obj){
+		Error out = Error.NO_ERROR;
 		if (!(obj instanceof RealEmp))
-			return false; // incompatibles types
-		return this.sub((RealEmp)obj);
+			out = Error.INCOMPATIBLE; // incompatibles types
+		else
+			out = this.sub((RealEmp)obj);
+		return out;
 	}
 	
-
-	public boolean add(RealEmp obj) {
-		this.X += obj.getX();
-		return true;
-	}
-
-//		if (Class.forName("RealEmp").isInstance(obj)){
-
-	public boolean sub(RealEmp obj) {
+	public Error sub(RealEmp obj) {
 		this.X -= obj.getX();
-		return true;
+		return Error.NO_ERROR; // OK
 	}
+
+	// MULT
+	public Error mult(ObjEmp obj){
+		Error out = Error.NO_ERROR;
+		if (!(obj instanceof RealEmp))
+			out = Error.INCOMPATIBLE; // incompatibles types
+		else
+			out = this.mult((RealEmp)obj);
+		return out;
+	}
+	
+	public Error mult(RealEmp obj) {
+		this.X -= obj.getX();
+		return Error.NO_ERROR; // OK
+	}
+
+	// DIV
+	public Error div(ObjEmp obj){
+		Error out = Error.NO_ERROR;
+		if (!(obj instanceof RealEmp))
+			out = Error.INCOMPATIBLE; // incompatibles types
+		else
+			out = this.sub((RealEmp)obj);
+		return out;
+	}
+	
+	public Error div(RealEmp obj) {
+		Error out = Error.NO_ERROR;
+		if (obj.getX() != 0.0){
+			this.X /= obj.getX();
+			out = Error.NO_ERROR;
+		}else{
+			out = Error.DIV_BY_ZERO; // division by zero !
+		}
+		return out;
+	}
+
+
 
 	public double getX(){
 		return this.X;
