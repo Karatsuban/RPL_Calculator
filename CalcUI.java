@@ -266,9 +266,6 @@ class CalcUI extends Thread{
 						this.pile.clear();
 						break;
 
-					case "":
-						break;
-
 					case "help":
 						this.displayHelp();
 						disp = false;
@@ -280,7 +277,8 @@ class CalcUI extends Thread{
 
 
 			}else{
-				this.outputUser.println("Unknown command: '"+words[0]+"'");
+				if (!words[0].isEmpty())
+					this.outputUser.println("Unknown command: '"+words[0]+"'");
 			}
 
 

@@ -24,9 +24,6 @@ public class CalcServer{
 
 	public CalcServer(String[] args){
 
-		for (String a: args)
-			System.out.println("#"+a+"#");
-
         Parser argsParser = new Parser(args);
 
 		// default parameters
@@ -44,7 +41,6 @@ public class CalcServer{
 			argsParser.advance(2);
         }
 
-		System.out.println("size: "+this.pileSize+"\n");
 
 		String tempArg = "";
 
