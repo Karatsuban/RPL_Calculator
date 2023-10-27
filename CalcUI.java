@@ -97,9 +97,9 @@ class CalcUI extends Thread{
 
 	private void initPatterns(){
 		this.realPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?");
-		this.complexPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?[\\+-](\\p{Digit}+(\\.\\p{Digit}+)?)?[iI]");
+		this.complexPattern = Pattern.compile("([\\+-]?[0-9]+(\\.\\p{Digit}?)?)?([\\+-](\\p{Digit}+(\\.\\p{Digit}?)?)?)?[iI]");
 		this.vector3DPattern = Pattern.compile("([\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?,){2}[\\+-]?(\\p{Digit})+(\\.\\p{Digit}+)?");
-		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|mult|div|exit|quit|help)");
+		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|mult|div|exit|quit|clear|help)");
 	}
 
 	private boolean isReal(String w){
@@ -125,30 +125,43 @@ class CalcUI extends Thread{
 
 
 	private boolean addComplex(String w){
-		int indexSepSign = Math.max(w.indexOf("+", 1), w.indexOf("-", 1));
+
+		System.out.print(w+"\t\t");	
+		int indexSepSign = Math.max(w.lastIndexOf("+"), w.lastIndexOf("-"));
 		double im = 1;
 		double re = 1;
-
-		if (indexSepSign == -1){
+		
+		//System.out.print("sep is at "+indexSepSign);
+		if (indexSepSign <= 0){
 			// the string is only composed of an imaginary number !
 			re = 0;
-			indexSepSign = 0;
 		}else{
 
 			String res = w.substring(0,indexSepSign); // get the real part
 			re = Double.parseDouble(res); // convert the real part to double
 		}
 
-		if (w.charAt(indexSepSign) == '-')
-			im = -1; // if the sign is '-', the im part will be negative
-		
-		
-		String ims = w.substring(indexSepSign+1, w.length()-1); // get the imaginary part
-		if (ims.length() != 0) // the im part is only composed of i...
-			im *= Double.parseDouble(ims); // so im = 1
-		
+	
+		if (indexSepSign != -1)
+		{
+			if (w.charAt(indexSepSign) == '-')
+				im = -1; // if the sign is '-', the im part will be negative
+		}
+
+
+		if (indexSepSign+1 < w.length()-1){ // the im part is not 'i' only
+			String ims = w.substring(indexSepSign+1, w.length()-1); // get the imaginary part without the i
+			//System.out.print(" ims = #"+ims+"# ");
+
+			im *= Double.parseDouble(ims);
+		}
+
+		//System.out.println(" im = "+im);
+
 		ObjEmp c = new ComplexEmp(re, im);
+		System.out.println(c);
 		return this.pile.push(c, this.outputUser);
+		
 	}
 
 	private boolean addVector3D(String w){
@@ -214,6 +227,7 @@ class CalcUI extends Thread{
 
 			if (this.isCommand(words[0])){
 				disp = true;
+				sFlag = true;
 				switch (words[0]){
 
 					case "exit":
@@ -261,6 +275,13 @@ class CalcUI extends Thread{
 						sFlag = this.pile.mult(this.outputUser);
 						break;
 					
+					case "clear":
+						this.pile.clear();
+						break;
+
+					case "":
+						break;
+
 					case "help":
 						this.displayHelp();
 						disp = false;

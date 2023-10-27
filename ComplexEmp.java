@@ -101,9 +101,11 @@ class ComplexEmp extends ObjEmp{
 	@Override
 	public String toString(){
 		String out = "";
-		out += this.X;
-		if (this.Y >= 0)
-			out += "+";
+		if (this.X != 0.0){
+			out += this.X;
+			if (this.Y >= 0)
+				out += "+";
+		}
 		out += this.Y+"i";
 		return out;
 	}

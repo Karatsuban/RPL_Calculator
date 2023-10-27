@@ -57,7 +57,15 @@ class PileRPL {
 		}
 		return temp;
 	}
-	
+
+
+	public void clear(){
+		while (!this.isEmpty()){
+			this.pop(System.out);
+		}
+	}
+
+
 	// OPERATIONS ON OBJ
 
 
