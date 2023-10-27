@@ -43,9 +43,6 @@ class CalcUI extends Thread{
 		this.replaySession = replay;
 		this.socket = socket;
 
-
-		System.out.println(socket);
-
 		try{
 			this.initStreams();
 		}catch (FileNotFoundException e){
@@ -125,13 +122,10 @@ class CalcUI extends Thread{
 
 
 	private boolean addComplex(String w){
-
-		System.out.print(w+"\t\t");	
 		int indexSepSign = Math.max(w.lastIndexOf("+"), w.lastIndexOf("-"));
 		double im = 1;
 		double re = 1;
 		
-		//System.out.print("sep is at "+indexSepSign);
 		if (indexSepSign <= 0){
 			// the string is only composed of an imaginary number !
 			re = 0;
@@ -140,7 +134,6 @@ class CalcUI extends Thread{
 			String res = w.substring(0,indexSepSign); // get the real part
 			re = Double.parseDouble(res); // convert the real part to double
 		}
-
 	
 		if (indexSepSign != -1)
 		{
@@ -151,17 +144,11 @@ class CalcUI extends Thread{
 
 		if (indexSepSign+1 < w.length()-1){ // the im part is not 'i' only
 			String ims = w.substring(indexSepSign+1, w.length()-1); // get the imaginary part without the i
-			//System.out.print(" ims = #"+ims+"# ");
-
 			im *= Double.parseDouble(ims);
 		}
 
-		//System.out.println(" im = "+im);
-
 		ObjEmp c = new ComplexEmp(re, im);
-		System.out.println(c);
 		return this.pile.push(c, this.outputUser);
-		
 	}
 
 	private boolean addVector3D(String w){
