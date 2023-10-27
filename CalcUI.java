@@ -89,7 +89,7 @@ class CalcUI extends Thread{
 		try {
 		this.inputUser.close();
 		}catch (IOException e){
-			this.outputUser.println("Error when closin input!");
+			this.outputUser.println("Error when closing input!");
 		}
 	
 		this.outputUser.close();
@@ -99,7 +99,7 @@ class CalcUI extends Thread{
 		this.realPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?");
 		this.complexPattern = Pattern.compile("[\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?[\\+-](\\p{Digit}+(\\.\\p{Digit}+)?)?[iI]");
 		this.vector3DPattern = Pattern.compile("([\\+-]?\\p{Digit}+(\\.\\p{Digit}+)?,){2}[\\+-]?(\\p{Digit})+(\\.\\p{Digit}+)?");
-		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|exit|quit|help)");
+		this.cmdPattern = Pattern.compile("(push|pop|disp|add|sub|mult|div|exit|quit|help)");
 	}
 
 	private boolean isReal(String w){
@@ -118,13 +118,13 @@ class CalcUI extends Thread{
 		return this.cmdPattern.matcher(w).matches();
 	}
 
-	private void addReal(String w){
+	private boolean addReal(String w){
 		ObjEmp r = new RealEmp(Double.parseDouble(w));
-		this.pile.push(r, this.outputUser);
+		return this.pile.push(r, this.outputUser);
 	}
 
 
-	private void addComplex(String w){
+	private boolean addComplex(String w){
 		int indexSepSign = Math.max(w.indexOf("+", 1), w.indexOf("-", 1));
 		double im = 1;
 		double re = 1;
@@ -148,26 +148,28 @@ class CalcUI extends Thread{
 			im *= Double.parseDouble(ims); // so im = 1
 		
 		ObjEmp c = new ComplexEmp(re, im);
-		this.pile.push(c, this.outputUser);
+		return this.pile.push(c, this.outputUser);
 	}
 
-	private void addVector3D(String w){
+	private boolean addVector3D(String w){
 		String[] words = w.split(",");
 		double[] values = new double[3];
 		for (int i=0; i<3; i++)
 			values[i] = Double.parseDouble(words[i]);
 		ObjEmp v3d = new Vector3DEmp(values[0], values[1], values[2]);
-		this.pile.push(v3d, this.outputUser);
+		return this.pile.push(v3d, this.outputUser);
 	}
 	
 
 	private void displayHelp(){
 		this.outputUser.println("The available commands are:");
 		this.outputUser.println("help : display this help");
-		this.outputUser.println("push <value> : push a value to the RPL");
-		this.outputUser.println("pop : remove the last value in the RPL");
-		this.outputUser.println("add : add the last values in the RPL if the operation is possible");
-		this.outputUser.println("sub : substract the second to last from the last element in the RPL if possible");
+		this.outputUser.println("push <value> : push a value to the pile");
+		this.outputUser.println("pop : remove the last value in the pile");
+		this.outputUser.println("add : add the last two values in the pile");
+		this.outputUser.println("sub : substract the second to last from the last element in the pile");
+		this.outputUser.println("mult: multiply the last two values in the pile");
+		this.outputUser.println("div : divide the second to last value by the last element in the pile");
 		this.outputUser.println("disp : display the RPL");
 		this.outputUser.println("exit/quit : exit from this application");
 	}
@@ -180,15 +182,11 @@ class CalcUI extends Thread{
 		
 		String line = "";
 
-
-		/*
-		if (line == null){
-			System.out.println("line is null");
-			isOver = true;
-		}*/
-
 		this.outputUser.println("Welcome to the interactive RPL Calculator!");
 		this.outputUser.println("Type 'help' to get help on the available commands.");
+
+		boolean disp = true; // display flag
+		boolean sFlag = true; // success flag
 
 		while (!isOver) {
 
@@ -215,47 +213,63 @@ class CalcUI extends Thread{
 
 
 			if (this.isCommand(words[0])){
+				disp = true;
 				switch (words[0]){
 
 					case "exit":
 					case "quit":
 						isOver = true;
+						disp = false;
 						break;
 			
 					case "push":
 						for (int i=1; i<words.length; i++){
 
 							if (this.isReal(words[i]))
-								this.addReal(words[i]);
+								sFlag = this.addReal(words[i]);
 							else if (this.isComplex(words[i]))
-								this.addComplex(words[i]);
+								sFlag = this.addComplex(words[i]);
 							else if (this.isVector3D(words[i]))
-								this.addVector3D(words[i]);
+								sFlag = this.addVector3D(words[i]);
 
 						}
 
 						break;
 
 					case "pop":
-						this.pile.pop(this.outputUser);
+						sFlag = (this.pile.pop(this.outputUser) != null);
 						break;
 		
 					case "disp":
 						this.outputUser.println(this.pile);
+						disp = false;
 						break;
 			
 					case "add":
-						this.pile.add(this.outputUser);
+						sFlag = this.pile.add(this.outputUser);
 						break;
 			
 					case "sub":
-						this.pile.sub(this.outputUser);
+						sFlag = this.pile.sub(this.outputUser);
 						break;
 
+					case "div":
+						sFlag = this.pile.div(this.outputUser);
+						break;
+
+					case "mult":
+						sFlag = this.pile.mult(this.outputUser);
+						break;
+					
 					case "help":
 						this.displayHelp();
+						disp = false;
 						break;
 				};
+
+				if (disp && sFlag)
+					this.outputUser.println(this.pile);
+
 
 			}else{
 				this.outputUser.println("Unknown command: '"+words[0]+"'");

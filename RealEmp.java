@@ -53,7 +53,7 @@ class RealEmp extends ObjEmp{
 	}
 	
 	public Error mult(RealEmp obj) {
-		this.X -= obj.getX();
+		this.X *= obj.getX();
 		return Error.NO_ERROR; // OK
 	}
 
@@ -63,7 +63,7 @@ class RealEmp extends ObjEmp{
 		if (!(obj instanceof RealEmp))
 			out = Error.INCOMPATIBLE; // incompatibles types
 		else
-			out = this.sub((RealEmp)obj);
+			out = this.div((RealEmp)obj);
 		return out;
 	}
 	

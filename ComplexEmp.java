@@ -1,3 +1,4 @@
+
 class ComplexEmp extends ObjEmp{
 
 	private double X;
@@ -47,24 +48,26 @@ class ComplexEmp extends ObjEmp{
 
 
 	// MULT
-	public Error mult(ObjEmp obj){ // TODO
+	public Error mult(ObjEmp obj){
 		Error out = Error.NO_ERROR;
 		if (!(obj instanceof ComplexEmp))
 			out = Error.INCOMPATIBLE;
 		else
-			out = this.sub((ComplexEmp)obj);
+			out = this.mult((ComplexEmp)obj);
 		return out;
 	}
 	
-	public Error mult(ComplexEmp obj) { // TODO
-		this.X -= obj.getX();
-		this.Y -= obj.getY();
+	public Error mult(ComplexEmp obj) {
+		double real = (this.X*obj.getX() - this.Y*obj.getY());
+		double img = (this.X*obj.getY() + this.Y*obj.getX());
+		this.X = real;
+		this.Y = img;
 		return Error.NO_ERROR;
 	}
 
 
 	// DIV
-	public Error div(ObjEmp obj){ // TODO
+	public Error div(ObjEmp obj){
 		Error out = Error.NO_ERROR;
 		if (!(obj instanceof ComplexEmp))
 			out = Error.INCOMPATIBLE;
@@ -73,10 +76,18 @@ class ComplexEmp extends ObjEmp{
 		return out;
 	}
 	
-	public Error div(ComplexEmp obj) { // TODO
-		this.X -= obj.getX();
-		this.Y -= obj.getY();
-		return Error.NO_ERROR;
+	public Error div(ComplexEmp obj) {
+		Error out = Error.NO_ERROR;
+		double den = Math.pow(obj.getX(), 2) + Math.pow(obj.getY(), 2);
+		if (den == 0.0){
+			out = Error.DIV_BY_ZERO;
+		}else{
+			double real = (this.X*obj.getX() + this.Y*obj.getY()) / den;
+			double img = (this.Y*obj.getX() - this.X*obj.getY()) / den;
+			this.X = real;
+			this.Y = img;
+		}
+		return out;
 	}
 
 	public double getX(){

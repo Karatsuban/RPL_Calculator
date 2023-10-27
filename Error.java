@@ -1,7 +1,7 @@
 
 public enum Error {
 	NO_ERROR ("No error"),
-	INCOMPATIBLE ("Incompatible tpyes"),
+	INCOMPATIBLE ("Incompatible types"),
 	NOT_PERMITTED ("Operation not permitted"),
 	DIV_BY_ZERO ("Division by zero");
 

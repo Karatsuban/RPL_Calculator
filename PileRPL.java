@@ -30,7 +30,8 @@ class PileRPL {
 	}
 
 
-	public void push(ObjEmp obj, PrintStream outStream){
+	public boolean push(ObjEmp obj, PrintStream out){
+		boolean success = true;
 		if (!this.isFull()){ // don't overflow
 			this.pile[this.nbObj] = obj; // add object
 			this.nbObj += 1; // increment nb of obj
@@ -39,18 +40,20 @@ class PileRPL {
 				this.reprWidth = obj.toString().length()+2; // adapt the pile visual representation's width
 			}
 		}else{
-			outStream.println("The stack is full!");
+			out.println("The stack is full!");
+			success = false;
 		}
+		return success;
 	}
 
-	public ObjEmp pop(PrintStream outStream){
+	public ObjEmp pop(PrintStream out){
 		ObjEmp temp = null;
 		if (!this.isEmpty()){
 			this.nbObj -= 1;
 			temp = this.pile[this.nbObj];
 			this.pile[this.nbObj] = null;
 		}else{
-			outStream.println("The stack is empty!");
+			out.println("The stack is empty!");
 		}
 		return temp;
 	}
@@ -58,9 +61,11 @@ class PileRPL {
 	// OPERATIONS ON OBJ
 
 
-	public void add(PrintStream out){
+	public boolean add(PrintStream out){
+		boolean success = true;
 		if (this.nbObj < 2){
 			out.println("Can't add : not enough objects!");
+			success = false;
 		}else{
 			ObjEmp o1 = this.pop(out);
 			ObjEmp o2 = this.pop(out);
@@ -73,14 +78,18 @@ class PileRPL {
 				out.println("Operation failed: operands of different types!");
 				this.push(o2, out); // pushing back both operands
 				this.push(o1, out);
+				success = false;
 			}
 		}
+		return success;
 	}
 
 
-	public void sub(PrintStream out){
+	public boolean sub(PrintStream out){
+		boolean success = true;
 		if (this.nbObj < 2){
 			out.println("Can't substract: not enough objects!");
+			success = false;
 		}else{
 			ObjEmp o1 = this.pop(out);
 			ObjEmp o2 = this.pop(out);
@@ -93,13 +102,17 @@ class PileRPL {
 				out.println("Operation failed: "+err.get());
 				this.push(o2, out); // operation failed
 				this.push(o1, out);
+				success = false;
 			}
 		}
+		return success;
 	}
 
-	public void mult(PrintStream out){
+	public boolean mult(PrintStream out){
+		boolean success = true;
 		if (this.nbObj < 2){
 			out.println("Can't multiply : not enough objects!");
+			success = false;
 		}else{
 			ObjEmp o1 = this.pop(out);
 			ObjEmp o2 = this.pop(out);
@@ -111,13 +124,17 @@ class PileRPL {
 				out.println("Operation failed: "+err.get());
 				this.push(o2, out); // operation failed
 				this.push(o1, out);
+				success = false;
 			}
 		}
+		return success;
 	}
 
-	public void div(PrintStream out){
+	public boolean div(PrintStream out){
+		boolean success = true;
 		if (this.nbObj < 2){
 			out.println("Can't divide : not enough objects!");
+			success = false;
 		}else{
 			ObjEmp o1 = this.pop(out);
 			ObjEmp o2 = this.pop(out);
@@ -129,15 +146,19 @@ class PileRPL {
 				out.println("Operation failed: "+err.get());
 				this.push(o2, out); // operation failed
 				this.push(o1, out);
+				success = false;
 			}
 		}
+		return success;
 	}
 
 	public String toString(){
 		String out = "";
 		if (this.isEmpty())
 		{
-			out += "The pile is empty!\n";
+			out += "Empty pile\n";
+			out += "(capacity: "+this.pile.length+")";
+			this.reprWidth = 0;
 		}else{
 			for (int i=this.nbObj-1; i>=0; i--){
 				out += i+"| ";
@@ -145,9 +166,8 @@ class PileRPL {
 				out += " ".repeat(this.reprWidth-this.pile[i].toString().length()-1);
 				out += "|\n";
 			}
-			out += " +"+"-".repeat(this.reprWidth)+"+\n";
+			out += " +"+"-".repeat(this.reprWidth);
 		}
-		out += "(capacity: "+this.pile.length+")";
 		return out;
 	}
 
