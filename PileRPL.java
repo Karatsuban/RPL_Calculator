@@ -174,7 +174,7 @@ class PileRPL {
 				out += " ".repeat(this.reprWidth-this.pile[i].toString().length()-1);
 				out += "|\n";
 			}
-			out += " +"+"-".repeat(this.reprWidth);
+			out += " +"+"-".repeat(this.reprWidth)+"+";
 		}
 		return out;
 	}
