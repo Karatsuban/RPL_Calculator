@@ -18,7 +18,7 @@ public class CalcServer{
 	private InputStream userIn;
 	private OutputStream userOut;
 
-	private int port = 12345;
+	private final int port = 12345;
 	ServerSocket servSocket;
 	Socket socket;
 
@@ -226,6 +226,7 @@ public class CalcServer{
 			out += "Local\n";
 		}else{
 			out += "Remote\n";
+			out += "Reachable at 127.0.0.1:"+this.port+"\n";
 		}
 
 		if (singleUser){
