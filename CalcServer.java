@@ -10,6 +10,7 @@ public class CalcServer{
     private boolean localSession;
     private boolean singleUser;
     private boolean sharedSession;
+	private boolean showHelp;
 	private int pileSize;
 
     private String logFilename;
@@ -32,6 +33,7 @@ public class CalcServer{
         this.localSession = true; // local
         this.singleUser = true; // single user
         this.sharedSession = false;  // no shared session
+		this.showHelp = false;
 
 		this.pileSize = -1;
 		String defaultLogFilename = "default_logfile.log";
@@ -93,25 +95,36 @@ public class CalcServer{
                 }
                 break;
 
+			case "help":
+				this.showHelp = true;
+				break;
+
 			case "NO_TOKEN":
 				System.out.println("No argument given. Default mode : local single-user");
 				break;
 
+
 			default:
-				System.out.println("In default");
+				System.out.println("Arguments unrecognized. Switching to default local single-user mode");
         }
 
-		System.out.println(this);
 
-		if (this.setStreams()){
-			this.launch();
+		if (this.showHelp)
+		{
+			this.displayHelp();
 		}else{
-			System.out.println("Aborting launch");
+			System.out.println(this);
+			if (this.setStreams()){
+				this.launch();
+			}else{
+				System.out.println("Aborting launch");
+			}
 		}
-
 	}
 
+
 	private boolean setStreams(){
+		// setting the streams
 		boolean out = true;
 
 		if (this.localSession){
@@ -121,6 +134,7 @@ public class CalcServer{
 		
 		if (this.replaySession){
 			File f = new File(this.logFilename);
+			// verifies the file exists
 			if (!f.isFile() || !f.exists()){
 				System.out.println("Replay file "+this.logFilename+" does not exists!");
 				out = false;
@@ -141,17 +155,19 @@ public class CalcServer{
 	}
 
 	private void launchSingle(){
-		PileRPL pile = new PileRPL(this.pileSize);
+		// launche a single-user session
+		PileRPL pile = new PileRPL(this.pileSize); // create only one pile
 
 		if (this.localSession)
 		{
+			// local session
 			new CalcUI(pile, userIn, userOut, this.logFilename, this.logSession, this.replaySession, this.localSession, null);
 		}
 		else
 		{
 			ServerSocket waiter;
 			Socket socket;
-
+			// launch a server
 			try {
 				waiter = new ServerSocket(this.port);
 				socket = waiter.accept();
@@ -164,14 +180,16 @@ public class CalcServer{
 
 
 	private void launchMultiple(){
+		// launch a multi-user session
 		ServerSocket waiter;
 		Socket socket;
 
 		if (this.sharedSession)
 		{
-			PileRPL sharedPile = new PileRPL(this.pileSize);
+			PileRPL sharedPile = new PileRPL(this.pileSize); // create the shared pile
 			try {
 				waiter = new ServerSocket(this.port);
+				// indefinitely launch the listening server
 				while (true)
 				{
 					socket = waiter.accept();
@@ -184,13 +202,13 @@ public class CalcServer{
 		}
 		else
 		{
-
+			// not shared session
 			try {
 				waiter = new ServerSocket(this.port);
 				while (true)
 				{
 					socket = waiter.accept();
-					PileRPL newPile = new PileRPL(this.pileSize);
+					PileRPL newPile = new PileRPL(this.pileSize); // create a pile per user
 					new CalcUI(newPile, null, null, this.logFilename, this.logSession, this.replaySession, this.localSession, socket);
 				}
 			}catch (IOException e){
@@ -202,25 +220,58 @@ public class CalcServer{
 
 
 	public String toString(){
-		String out = "Vars:\n";
-		out += "log :\t\t"+this.logSession+"\n";
-        out += "replay: \t"+this.replaySession+"\n";
-        out += "local: \t\t"+this.localSession+"\n";
-        out += "singleUser: \t"+this.singleUser+"\n";
-        out += "shared: \t"+this.sharedSession+"\n";
-		out += "\n";
+		// Displays the chosen modes
+		String out = "Launched in mode:\n";
+		if (this.localSession){
+			out += "Local\n";
+		}else{
+			out += "Remote\n";
+		}
+
+		if (singleUser){
+			out += "Single user\n";
+			if (this.logSession){
+				out += "Log ("+this.logFilename+")\n";
+			}
+			if (this.replaySession){
+				out += "Replay ("+this.logFilename+")\n";
+			}
+		}else{
+			if (this.sharedSession){
+				out += "Shared\n";
+			}else{
+				out += "NOT shared\n";
+			}
+		}
 		return out;
 	}
 
 
+	private void displayHelp(){
+		String out = "";
+		out += "Usage:\n";
+        out += "$ java CalcUI size <size> (user ([log|replay] <file>) [local|remote]) (users remote [shared|not_shared])\n";
+        out += "- size <value> : the created RPL will be created with this size (OPTIONAL)\n";
+        out += "- user : specify the there will be only one user\n";
+        out += "- users : multiple connection can be made\n";
+        out += "\nOptions for single users\n";
+        out += "- remote : the program can be accessed via socket\n";
+        out += "- local : the program is directly accessible from the command line that launched it\n";
+        out += "- log <file> : all of the user's commands will be stored in the file (OPTIONAL)\n";
+        out += "- replay <file> : the file is used as input of the calculator (OPTIONAL)\n";
+        out += "\nOptions for multiple users\n";
+        out += "- remote : the program will be available via socket (OPTIONAL)\n";
+        out += "- shared : a unique RPL Calculator is created, shared by every user\n";
+        out += "- not-shared : each user gets its own RPL Calculator\n";
+        out += "\nIf no arguments are provided, the program will start for one user in local mode\n";
+        out += "The replay/log options are not available for multiple users\n";
+        out += "There is no local options for multiple users\n";
+
+		System.out.println(out);
+	}
+
 
     public static void main(String[] args){
-
-        // usage :
-        // $ java CalcUI size <size> (user [log|replay|local|remote]) (users remote [shared|solo])
-
-
-		// TODO AJOUTER L'AIDE (-h ou help)
 
         CalcServer server = new CalcServer(args);
     }

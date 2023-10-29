@@ -14,18 +14,18 @@ You can compile the code with the command `$ make`.
 ### Execute
 
 Launch the program with the command:  
-`$ java CalcServer size <value> [user|users] [remote|local] [shared|not_share] [log|replay] <file>`
+`$ java CalcServer size <value> [user|users] [remote|local] [shared|not_shared] [log|replay] <file>`
 
 - size <value> : the created RPL will be created with this size (OPTIONAL)
 - user : specify the there will be only one user
 - users : multiple connection can be made
 
 
-Options for single users
+Options for single users  
 - remote : the program can be accessed via socket
 - local : the program is directly accessible from the command line that launched it
-- log <file> : all of the user's commands will be stored in the file
-- replay <file> : the file is used as input of the calculator
+- log <file> : all of the user's commands will be stored in the file (OPTIONAL)
+- replay <file> : the file is used as input of the calculator (OPTIONAL)
 
 Options for multiple users
 
