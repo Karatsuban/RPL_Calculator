@@ -36,5 +36,5 @@ Options for multiple users
 > If not arguments are provided, the program will start for one user in local mode  
 > The replay/log options are not available for multiple users  
 > There is no local options for multiple users
-
+> For remote sessions, the program is reachable at the address 127.0.0.1, port 12345
 
